@@ -87,6 +87,19 @@ function getWebviewContent() {
                 align-self: flex-start;
                 background-color: #003300;
             }
+            .loader {
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid green;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                animation: spin 2s linear infinite;
+                align-self: center;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
         </style>
     </head>
     <body>
@@ -100,12 +113,29 @@ function getWebviewContent() {
             function sendMessage() {
                 const input = document.getElementById('messageInput');
                 const message = input.value;
-                input.value = ''; // Clear input field after sending
+                input.value = '';
                 appendMessage(message, 'user');
+                showLoader();
                 vscode.postMessage({
                     command: 'sendMessage',
                     text: message
                 });
+            }
+
+             function showLoader() {
+                const loaderElement = document.createElement('div');
+                loaderElement.classList.add('loader');
+                loaderElement.id = 'loader';
+                const container = document.getElementById('chat-container');
+                container.appendChild(loaderElement);
+                container.scrollTop = container.scrollHeight;
+            }
+
+            function hideLoader() {
+                const loaderElement = document.getElementById('loader');
+                if (loaderElement) {
+                    loaderElement.remove();
+                }
             }
 
             function appendMessage(message, sender) {
