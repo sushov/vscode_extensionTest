@@ -60,53 +60,50 @@ function getWebviewContent() {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Chat Window</title>
-        <style>
-            #messages { 
-                list-style-type: none; 
-                padding: 0; 
-            }
-            li { 
-                margin-bottom: 10px; 
-            }
-        </style>
     </head>
     <body>
         <h1>Chat with API</h1>
-        <ul id="messages"></ul>
+        <div id="chat" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+            <!-- Chat messages will be added here -->
+        </div>
         <input type="text" id="messageInput" placeholder="Type a message">
         <button onclick="sendMessage()">Send</button>
 
         <script>
             const vscode = acquireVsCodeApi();
+
+            function appendMessage(message, isUser = true) {
+                const chat = document.getElementById('chat');
+                const messageDiv = document.createElement('div');
+                messageDiv.textContent = message;
+                messageDiv.style.color = isUser ? 'blue' : 'green';
+                chat.appendChild(messageDiv);
+                chat.scrollTop = chat.scrollHeight; // Scroll to bottom
+            }
+
             function sendMessage() {
-                const input = document.getElementById('messageInput');
-                const message = input.value;
-                addMessageToChat('You', message);
+                const messageInput = document.getElementById('messageInput');
+                const message = messageInput.value;
+                appendMessage(message); // Display the user's message
                 vscode.postMessage({
                     command: 'sendMessage',
                     text: message
                 });
-                input.value = '';
+                messageInput.value = ''; // Clear the input field
             }
 
             window.addEventListener('message', event => {
                 const message = event.data;
                 if (message.command === 'newMessage') {
-                    addMessageToChat('API', message.text);
+                    appendMessage(message.text, false); // Display the response
                 }
             });
-
-            function addMessageToChat(sender, text) {
-                const messages = document.getElementById('messages');
-                const newMessage = document.createElement('li');
-                newMessage.textContent = sender + ': ' + text;
-                messages.appendChild(newMessage);
-                messages.scrollTop = messages.scrollHeight; // Scroll to bottom
-            }
         </script>
     </body>
     </html>`;
 }
+
+
 
 
 
