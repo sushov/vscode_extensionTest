@@ -59,138 +59,55 @@ function getWebviewContent() {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Code Chat</title>
+        <title>Chat Window</title>
         <style>
-            body {
-                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-                margin: 0;
-                padding: 20px;
-                background-color: #1E1E1E; /* Dark background */
-                color: #9CDCFE; /* Light text color */
+            #messages { 
+                list-style-type: none; 
+                padding: 0; 
             }
-            h1 {
-                color: #4EC9B0; /* Heading color */
-            }
-            #chat-container {
-                background: #1E1E1E; /* Dark background for the container */
-                border-radius: 5px;
-                padding: 10px;
-                box-shadow: 0 2px 10px 0 rgba(0,0,0,0.2);
-                max-width: 800px;
-                margin: 0 auto;
-            }
-            #messageInput {
-                width: calc(100% - 90px);
-                padding: 10px;
-                margin-right: 10px;
-                border-radius: 4px;
-                border: 1px solid #3C3C3C; /* Subtle border */
-                background-color: #2D2D2D; /* Slightly different background */
-                color: #D4D4D4; /* Light text color */
-                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            }
-            button {
-                padding: 10px 20px;
-                background-color: #007ACC; /* Button color */
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                transition: background-color 0.3s;
-            }
-            button:hover {
-                background-color: #005C99; /* Darker shade on hover */
-            }
-            ul {
-                list-style: none;
-                padding: 0;
-            }
-            li {
-                margin: 10px 0;
-                padding: 10px;
-                background-color: #252526; /* Background color for each message */
-                border-radius: 4px;
-                color: #CCC; /* Text color for messages */
-                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            }
-            .timestamp {
-                color: #888; /* Timestamp color */
-                font-size: 0.85em;
-                margin-left: 10px;
-            }
-            .message-content {
-                color: #6A9955; /* Color similar to code comments */
-            }
-            #messages {
-                max-height: 300px;
-                overflow-y: auto;
+            li { 
+                margin-bottom: 10px; 
             }
         </style>
     </head>
     <body>
-        <div id="chat-container">
-            <h1>Chat with API</h1>
-            <div id="input-area">
-                <input type="text" id="messageInput" placeholder="Type a message" onkeypress="handleKeyPress(event)">
-                <button onclick="sendMessage()">Send</button>
-            </div>
-            <ul id="messages"></ul>
-        </div>
+        <h1>Chat with API</h1>
+        <ul id="messages"></ul>
+        <input type="text" id="messageInput" placeholder="Type a message">
+        <button onclick="sendMessage()">Send</button>
 
         <script>
             const vscode = acquireVsCodeApi();
-            
-            function handleKeyPress(event) {
-                if (event.key === 'Enter') {
-                    sendMessage();
-                }
-            }
-
             function sendMessage() {
                 const input = document.getElementById('messageInput');
                 const message = input.value;
+                addMessageToChat('You', message);
+                vscode.postMessage({
+                    command: 'sendMessage',
+                    text: message
+                });
                 input.value = '';
-                if (message) {
-                    vscode.postMessage({
-                        command: 'sendMessage',
-                        text: message
-                    });
-                }
-                input.focus();
-                scrollToBottom();
-            }
-
-            function scrollToBottom() {
-                const messagesContainer = document.getElementById('messages');
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
 
             window.addEventListener('message', event => {
                 const message = event.data;
-                switch (message.command) {
-                    case 'newMessage':
-                        const messages = document.getElementById('messages');
-                        const newMessage = document.createElement('li');
-                        const timestamp = document.createElement('span');
-                        timestamp.className = 'timestamp';
-                        timestamp.textContent = new Date().toLocaleTimeString(); // Simple timestamp
-                        const messageContent = document.createElement('p');
-                        messageContent.className = 'message-content';
-                        messageContent.textContent = message.text;
-                        newMessage.appendChild(messageContent);
-                        newMessage.appendChild(timestamp);
-                        messages.appendChild(newMessage);
-                        scrollToBottom();
-                        break;
-                    case 'errorMessage':
-                        // Handle error
-                        break;
+                if (message.command === 'newMessage') {
+                    addMessageToChat('API', message.text);
                 }
             });
+
+            function addMessageToChat(sender, text) {
+                const messages = document.getElementById('messages');
+                const newMessage = document.createElement('li');
+                newMessage.textContent = sender + ': ' + text;
+                messages.appendChild(newMessage);
+                messages.scrollTop = messages.scrollHeight; // Scroll to bottom
+            }
         </script>
     </body>
     </html>`;
 }
+
 
 
 /**
