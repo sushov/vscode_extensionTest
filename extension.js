@@ -59,19 +59,20 @@ function getWebviewContent() {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Chat Window</title>
+        <title>Code Chat</title>
         <style>
             body {
-                font-family: 'Segoe UI', sans-serif;
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
                 margin: 0;
                 padding: 20px;
-                background-color: #eee;
+                background-color: #1E1E1E; /* Dark background */
+                color: #9CDCFE; /* Light text color */
             }
             h1 {
-                color: #105b63;
+                color: #4EC9B0; /* Heading color */
             }
             #chat-container {
-                background: #fff;
+                background: #1E1E1E; /* Dark background for the container */
                 border-radius: 5px;
                 padding: 10px;
                 box-shadow: 0 2px 10px 0 rgba(0,0,0,0.2);
@@ -83,11 +84,14 @@ function getWebviewContent() {
                 padding: 10px;
                 margin-right: 10px;
                 border-radius: 4px;
-                border: 1px solid #ccc;
+                border: 1px solid #3C3C3C; /* Subtle border */
+                background-color: #2D2D2D; /* Slightly different background */
+                color: #D4D4D4; /* Light text color */
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             }
             button {
                 padding: 10px 20px;
-                background-color: #0e8074;
+                background-color: #007ACC; /* Button color */
                 color: white;
                 border: none;
                 border-radius: 4px;
@@ -95,7 +99,7 @@ function getWebviewContent() {
                 transition: background-color 0.3s;
             }
             button:hover {
-                background-color: #105b63;
+                background-color: #005C99; /* Darker shade on hover */
             }
             ul {
                 list-style: none;
@@ -104,8 +108,18 @@ function getWebviewContent() {
             li {
                 margin: 10px 0;
                 padding: 10px;
-                background-color: #f9f9f9;
+                background-color: #252526; /* Background color for each message */
                 border-radius: 4px;
+                color: #CCC; /* Text color for messages */
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            }
+            .timestamp {
+                color: #888; /* Timestamp color */
+                font-size: 0.85em;
+                margin-left: 10px;
+            }
+            .message-content {
+                color: #6A9955; /* Color similar to code comments */
             }
             #messages {
                 max-height: 300px;
@@ -135,14 +149,20 @@ function getWebviewContent() {
             function sendMessage() {
                 const input = document.getElementById('messageInput');
                 const message = input.value;
-                input.value = ''; // Clear the input field
+                input.value = '';
                 if (message) {
                     vscode.postMessage({
                         command: 'sendMessage',
                         text: message
                     });
                 }
-                input.focus(); // Refocus on the input field after sending
+                input.focus();
+                scrollToBottom();
+            }
+
+            function scrollToBottom() {
+                const messagesContainer = document.getElementById('messages');
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
 
             window.addEventListener('message', event => {
@@ -151,11 +171,19 @@ function getWebviewContent() {
                     case 'newMessage':
                         const messages = document.getElementById('messages');
                         const newMessage = document.createElement('li');
-                        newMessage.textContent = message.text; // Use message.text instead of message.message
+                        const timestamp = document.createElement('span');
+                        timestamp.className = 'timestamp';
+                        timestamp.textContent = new Date().toLocaleTimeString(); // Simple timestamp
+                        const messageContent = document.createElement('p');
+                        messageContent.className = 'message-content';
+                        messageContent.textContent = message.text;
+                        newMessage.appendChild(messageContent);
+                        newMessage.appendChild(timestamp);
                         messages.appendChild(newMessage);
+                        scrollToBottom();
                         break;
                     case 'errorMessage':
-                        // Add error handling UI update here
+                        // Handle error
                         break;
                 }
             });
@@ -163,6 +191,7 @@ function getWebviewContent() {
     </body>
     </html>`;
 }
+
 
 /**
  * Sends a message to the API and returns the response.
